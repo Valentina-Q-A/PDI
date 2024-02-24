@@ -2,6 +2,9 @@
 
 import random
 import pygame
+import cv2
+import numpy as np
+
 
 pygame.init()
 
@@ -173,8 +176,40 @@ def modify_player_info():
     file.close()
 
 
+cap = cv2.VideoCapture(0)  # 0 indica la cámara predeterminada (puedes cambiarlo si tienes múltiples cámaras)
+ret, frame = cap.read()
+previous_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
 run = True
 while run:
+    timer.tick(fps)
+
+    # Captura el fotograma de la cámara
+    ret, frame = cap.read()
+    current_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    frame_diff = cv2.absdiff(current_gray, previous_gray)
+    _, threshold = cv2.threshold(frame_diff, 30, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours:
+        contour = max(contours, key=cv2.contourArea)
+        hull = cv2.convexHull(contour)
+        M = cv2.moments(hull)
+        if M["m00"] != 0:
+            cx = int(M["m10"] / M["m00"])
+            cy = int(M["m01"] / M["m00"])
+            hand_center = (cx, cy)
+            hand_detected = True
+            cv2.circle(frame, hand_center, 5, (0, 255, 0), -1)
+        else:
+            hand_detected = False
+
+    previous_gray = current_gray
+
+    # Muestra la imagen de la cámara en una ventana separada
+    cv2.imshow('Camara', frame)    
+    
     timer.tick(fps)
     if counter < 40:
         counter += 1
@@ -203,6 +238,11 @@ while run:
             rocket_coords, rocket = draw_rocket(rocket_coords, 1)
         if rocket_coords[0] < -50:
             rocket_active = False
+
+    if hand_detected:
+            player_y = hand_center[1] - 10  # Ajusta este valor según tus necesidades
+            player_y = max(init_y, min(player_y, HEIGHT - 60))  # Limita la posición del jugador en pantalla
+        
 
     player = draw_player()
     colliding, restart_cmd = check_colliding()
@@ -265,6 +305,11 @@ while run:
 
     if distance > high_score:
         high_score = int(distance)
+    
 
     pygame.display.flip()
+pygame.time.delay(100)
+cap.release()
+cv2.destroyAllWindows()
+
 pygame.quit()
