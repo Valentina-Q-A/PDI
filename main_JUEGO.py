@@ -1,5 +1,6 @@
 #Camilo Anacona
 #Valentina Quiroga
+
 import random
 import pygame
 import cv2
@@ -35,10 +36,8 @@ new_bg = 0
 pause = False
 
 # Rocket variables
-# Definir el rectángulo del cohete (las coordenadas y el tamaño pueden ajustarse según sea necesario)
-rocket = pygame.rect.Rect((0, 0), (50, 20))
 rocket_counter = 0
-rocket_active = True
+rocket_active = False
 rocket_delay = 0
 rocket_coords = []
 
@@ -142,7 +141,6 @@ def draw_player():
 
 # Function to check collisions
 def check_colliding():
-    global rocket
     coll = [False, False]
     rstrt = False
     if player.colliderect(bot_plat):
@@ -169,7 +167,6 @@ def generate_laser():
         laser_y = random.randint(100, HEIGHT - 400)
         new_lase = [[WIDTH + offset, laser_y], [WIDTH + offset, laser_y + laser_height]]
     return new_lase
-
 
 # Function to draw rockets
 def draw_rocket(coords, mode):
@@ -223,6 +220,27 @@ while run:
         laser = generate_laser()
         new_laser = False
     lines, top_plat, bot_plat, laser, laser_line = draw_screen(lines, laser)
+    
+    
+    if not rocket_active and not pause:
+        rocket_counter += 1
+    if rocket_counter > 180:
+        rocket_counter = 0
+        rocket_active = True
+        rocket_delay = 0
+        rocket_coords = [WIDTH, HEIGHT/2]
+    if rocket_active:
+        if rocket_delay < 90:
+            if not pause:
+                rocket_delay += 1
+            rocket_coords, rocket = draw_rocket(rocket_coords, 0)
+        else:
+            rocket_coords, rocket = draw_rocket(rocket_coords, 1)
+        if rocket_coords[0] < -50:
+            rocket_active = False
+    
+    
+    
 
     # Capture frame from webcam
     ret, frame = cap.read()
@@ -262,18 +280,18 @@ while run:
     if not pause:
         distance += game_speed
         if booster:
-            y_velocity -= gravity +2
+            y_velocity -= gravity+1
         else:
-            y_velocity += gravity +4
+            y_velocity += gravity+3
         if (colliding[0] and y_velocity > 0) or (colliding[1] and y_velocity < 0):
             y_velocity = 0
         player_y += y_velocity
 
     # Progressive speed increases
     if distance < 50000:
-        game_speed = 8 + (distance // 500) / 10
+        game_speed = 5 + (distance // 500) / 10
     else:
-        game_speed = 8
+        game_speed = 5
 
     if laser[0][0] < 0 and laser[1][0] < 0:
         new_laser = True
@@ -295,4 +313,3 @@ while run:
 # Liberar recursos
 cap.release()
 pygame.quit()
-
