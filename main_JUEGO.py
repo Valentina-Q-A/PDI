@@ -1,6 +1,3 @@
-#Camilo Anacona
-#Valentina Quiroga
-
 import random
 import pygame
 import cv2
@@ -188,16 +185,15 @@ def draw_rocket(coords, mode):
 
 # Function to draw the pause screen
 def draw_pause():
-    global pause
     pygame.draw.rect(surface, (128, 128, 128, 150), [0, 0, WIDTH, HEIGHT])
     pygame.draw.rect(surface, 'dark gray', [200, 150, 600, 50], 0, 10)
-    surface.blit(font.render('Game Paused. Escape Btn Resumes', True, 'black'), (220, 160))
+    surface.blit(font.render('Game Paused', True, 'black'), (380, 160))
     restart_btn = pygame.draw.rect(surface, 'white', [200, 220, 280, 50], 0, 10)
     surface.blit(font.render('Restart', True, 'black'), (220, 230))
     quit_btn = pygame.draw.rect(surface, 'white', [520, 220, 280, 50], 0, 10)
     surface.blit(font.render('Quit', True, 'black'), (540, 230))
-    pygame.draw.rect(surface, 'dark gray', [200, 300, 600, 50], 0, 10)
-    surface.blit(font.render(f'Lifetime Distance Ran: {int(lifetime)}', True, 'black'), (220, 310))
+    #pygame.draw.rect(surface, 'dark gray', [200, 300, 600, 50], 0, 10)
+    #surface.blit(font.render(f'Lifetime Distance Ran: {int(lifetime)}', True, 'black'), (220, 310))
     screen.blit(surface, (0, 0))
     return restart_btn, quit_btn
 
@@ -211,6 +207,9 @@ def modify_player_info():
     file.write(str(int(high_score)) + '\n')
     file.write(str(int(lifetime)))
     file.close()
+    
+
+        
 
 # Main game loop            
 run = True
@@ -220,6 +219,9 @@ while run:
         laser = generate_laser()
         new_laser = False
     lines, top_plat, bot_plat, laser, laser_line = draw_screen(lines, laser)
+    
+    if pause:
+        restart, quits = draw_pause()
     
     
     if not rocket_active and not pause:
@@ -266,16 +268,38 @@ while run:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            modify_player_info()
             run = False
-            cv2.destroyAllWindows()  # Close OpenCV windows when game is closed
+            
+            #---------------------CORRECCIÓN-------------------
+            cv2.waitKey(1) 
+            cv2.destroyAllWindows() 
+            #---------------------CORRECCIÓN-------------------
+            
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                pause = not pause  # Toggle pause
+                #pause = not pause  # Toggle pause
+                
+                if pause:
+                    pause = False
+                else:
+                    pause = True
+
+                
             if event.key == pygame.K_SPACE and not pause:
                 booster = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 booster = False
+                
+        if event.type == pygame.MOUSEBUTTONDOWN and pause:
+            if restart.collidepoint(event.pos):
+                restart_cmd = True
+            if quits.collidepoint(event.pos):
+                modify_player_info()
+                run = False
+
+                
 
     if not pause:
         distance += game_speed
@@ -301,15 +325,22 @@ while run:
         bg_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
     if restart_cmd:
+        modify_player_info()
         distance = 0
+        rocket_active = False
+        rocket_counter = 0
         pause = False
         player_y = init_y
         y_velocity = 0
-        restart_cmd = False
+        restart_cmd = 0
         new_laser = True
+
+    if distance > high_score:
+        high_score = int(distance)
 
     pygame.display.flip()
 
 # Liberar recursos
 cap.release()
 pygame.quit()
+
