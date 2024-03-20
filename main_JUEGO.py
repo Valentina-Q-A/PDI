@@ -60,7 +60,7 @@ mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=1, mi
 # Función para detectar gestos de mano
 def detect_hand(frame):
     # Convertir la imagen a RGB
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #formato BGR (Blue, Green, Red) a formato RGB (Red, Green, Blue) 
     
     # Procesar el frame con el modelo de detección de manos
     results = mp_hands.process(frame_rgb)
@@ -76,12 +76,15 @@ def detect_hand(frame):
         
         # Calcular la distancia entre el pulgar y los otros dedos
         thumb_to_index = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([index_tip.x, index_tip.y]))
+        # Calcular la distancia entre la punta del pulgar y la punta del dedo medio
         thumb_to_middle = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([middle_tip.x, middle_tip.y]))
+        # Calcular la distancia entre la punta del pulgar y la punta del dedo anular
         thumb_to_ring = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([ring_tip.x, ring_tip.y]))
+        # Calcular la distancia entre la punta del pulgar y la punta del dedo meñique
         thumb_to_little = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([little_tip.x, little_tip.y]))
         
         # Determinar el gesto de la mano basado en las distancias de los dedos
-        if thumb_to_index > 0.1 and thumb_to_middle > 0.1 and thumb_to_ring > 0.1 and thumb_to_little > 0.1:
+        if thumb_to_index > 0.1 and thumb_to_middle > 0.1 and thumb_to_ring > 0.1 and thumb_to_little > 0.1: # verifica si la distancia entre la punta del pulgar y la punta de cada uno de los otros dedos es mayor a 0.1
             return "open"  # Se considera que la mano está abierta
         else:
             return "closed"  # Se considera que la mano está cerrada
