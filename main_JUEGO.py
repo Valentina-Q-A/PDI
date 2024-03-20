@@ -9,53 +9,55 @@ import sys
 pygame.init()
 
 # Configuración de la pantalla del juego
-WIDTH = 1000
-HEIGHT = 600
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
-surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+WIDTH = 1000 # Anchura de la pantalla del juego
+HEIGHT = 600 # Altura de la pantalla del juego
+screen = pygame.display.set_mode([WIDTH, HEIGHT]) # Crear la pantalla del juego con las dimensiones especificadas
+surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA) # Crear una superficie transparente para realizar dibujos adicionales
 pygame.display.set_caption('Jetpack Joyride Remake in Python!')
 fps = 60
-timer = pygame.time.Clock()
+timer = pygame.time.Clock() # Inicializar un temporizador para controlar la velocidad
 font = pygame.font.Font('freesansbold.ttf', 32)
-bg_color = (128, 128, 128)
+bg_color = (128, 128, 128) # Color de fondo del juego
 lines = [0, WIDTH // 4, 2 * WIDTH // 4, 3 * WIDTH // 4]
 game_speed = 3
-init_y = HEIGHT - 130
-player_y = init_y
-booster = False
+init_y = HEIGHT - 130 
+player_y = init_y # Posición inicial en el eje Y del jugador
+booster = False # Variable para controlar si el propulsor está activo o no
 y_velocity = 0
 gravity = 0.4
 new_laser = True
-laser = []
+laser = [] # Lista para almacenar las coordenadas de los obstáculos láser
 distance = 0
 restart_cmd = False
-new_bg = 0
+new_bg = 0 # Variable para almacenar la posición de fondo en el eje X
 pause = False
 
-# Rocket variables
+# Variables del cohete
 rocket_counter = 0
 rocket_active = False
 rocket_delay = 0
 rocket_coords = []
 
-# Load player info at the beginning
+# Cargar información inicial del jugador
 try:
     file = open('player_info.txt', 'r')
     read = file.readlines()
-    high_score = int(read[0])
-    lifetime = int(read[1])
+    # Extraer el puntaje más alto y la cantidad de tiempo de vida desde las líneas leídas
+    high_score = int(read[0]) # Convertir el puntaje más alto a entero
+    lifetime = int(read[1]) # Convertir el tiempo de vida a entero
     file.close()
 except FileNotFoundError:
     high_score = 0
     lifetime = 0
 
-# Initialize the camera
+# Inicializar la cámara
 cap = cv2.VideoCapture(0)
 
-# Initialize MediaPipe hands detection
+# Inicializar la detección de manos de MediaPipe
+
 mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
 
-# Function to detect hand gesture
+# Función para detectar gestos de mano
 def detect_hand(frame):
     # Convertir la imagen a RGB
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -63,7 +65,7 @@ def detect_hand(frame):
     # Procesar el frame con el modelo de detección de manos
     results = mp_hands.process(frame_rgb)
 
-    # If hands are detected, determine if hand is open or closed
+    # Si se detectan manos, determinar si la mano está abierta o cerrada
     if results.multi_hand_landmarks:
         landmarks = results.multi_hand_landmarks[0].landmark
         thumb_tip = landmarks[4]
@@ -72,21 +74,21 @@ def detect_hand(frame):
         ring_tip = landmarks[16]
         little_tip = landmarks[20]
         
-        # Calculate distance between thumb and other fingers
+        # Calcular la distancia entre el pulgar y los otros dedos
         thumb_to_index = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([index_tip.x, index_tip.y]))
         thumb_to_middle = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([middle_tip.x, middle_tip.y]))
         thumb_to_ring = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([ring_tip.x, ring_tip.y]))
         thumb_to_little = np.linalg.norm(np.array([thumb_tip.x, thumb_tip.y]) - np.array([little_tip.x, little_tip.y]))
         
-        # Determine hand gesture based on finger distances
+        # Determinar el gesto de la mano basado en las distancias de los dedos
         if thumb_to_index > 0.1 and thumb_to_middle > 0.1 and thumb_to_ring > 0.1 and thumb_to_little > 0.1:
-            return "open"  # Hand is considered open
+            return "open"  # Se considera que la mano está abierta
         else:
-            return "closed"  # Hand is considered closed
+            return "closed"  # Se considera que la mano está cerrada
     else:
-        return "closed"  # If no hands are detected, consider hand closed
+        return "closed"  # Si no se detectan manos, se considera que la mano está cerrada
 
-# Function to draw the hand landmarks
+# Función para dibujar los puntos de referencia de la mano
 def draw_hand_landmarks(frame, results):
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
@@ -95,7 +97,7 @@ def draw_hand_landmarks(frame, results):
                 cx, cy = int(landmark.x * width), int(landmark.y * height)
                 cv2.circle(frame, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
 
-# Function to draw the game screen
+# Función para dibujar la pantalla del juego
 def draw_screen(line_list, lase):
     screen.fill('black')
     pygame.draw.rect(surface, (bg_color[0], bg_color[1], bg_color[2], 50), [0, 0, WIDTH, HEIGHT])
@@ -117,7 +119,7 @@ def draw_screen(line_list, lase):
     screen.blit(font.render(f'High Score: {int(high_score)} m', True, 'white'), (10, 70))
     return line_list, top, bot, lase, lase_line
 
-# Function to draw the player
+# Función para dibujar al jugador
 def draw_player():
     play = pygame.rect.Rect((120, player_y + 10), (25, 60))
     if player_y < init_y:
@@ -136,7 +138,7 @@ def draw_player():
     pygame.draw.circle(screen, 'black', (138, player_y + 12), 3)
     return play
 
-# Function to check collisions
+# Función para verificar colisiones
 def check_colliding():
     coll = [False, False]
     rstrt = False
@@ -151,7 +153,7 @@ def check_colliding():
             rstrt = True
     return coll, rstrt
 
-# Function to generate laser obstacles
+# Función para generar obstáculos de láser
 def generate_laser():
     laser_type = random.randint(0, 1)
     offset = random.randint(10, 300)
@@ -165,7 +167,7 @@ def generate_laser():
         new_lase = [[WIDTH + offset, laser_y], [WIDTH + offset, laser_y + laser_height]]
     return new_lase
 
-# Function to draw rockets
+# Función para dibujar cohetes
 def draw_rocket(coords, mode):
     if mode == 0:
         rock = pygame.draw.rect(screen, 'dark red', [coords[0] - 60, coords[1] - 25, 50, 50], 0, 5)
@@ -183,7 +185,7 @@ def draw_rocket(coords, mode):
 
     return coords, rock
 
-# Function to draw the pause screen
+# Función para dibujar la pantalla de pausa
 def draw_pause():
     pygame.draw.rect(surface, (128, 128, 128, 150), [0, 0, WIDTH, HEIGHT])
     pygame.draw.rect(surface, 'dark gray', [200, 150, 600, 50], 0, 10)
@@ -197,7 +199,7 @@ def draw_pause():
     screen.blit(surface, (0, 0))
     return restart_btn, quit_btn
 
-# Function to modify player info
+# Función para modificar la información del jugador
 def modify_player_info():
     global high_score, lifetime
     if distance > high_score:
@@ -211,7 +213,7 @@ def modify_player_info():
 
         
 
-# Main game loop            
+# Bucle principal del juego            
 run = True
 while run:
     timer.tick(fps)
@@ -244,37 +246,36 @@ while run:
     
     
 
-    # Capture frame from webcam
+    # Capturar el marco de la cámara
     ret, frame = cap.read()
     
     if ret:
-        # Detect hand gesture
+        # Detectar gesto de mano
         hand_gesture = detect_hand(frame)
         
-        # Adjust game based on hand gesture
+        # Ajustar el juego basado en el gesto de mano
         if hand_gesture == "open":
             booster = True
         else:
             booster = False
 
-        # Draw hand landmarks on frame
+        # Dibujar los puntos de referencia de la mano en el marco
         draw_hand_landmarks(frame, mp_hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
 
-        # Show the frame with hand landmarks
+        # Mostrar los puntos de referencia
         cv2.imshow('Hand Landmarks', frame)
 
     player = draw_player()
     colliding, restart_cmd = check_colliding()
 
+    #Control de eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             modify_player_info()
             run = False
             
-            #---------------------CORRECCIÓN-------------------
-            cv2.waitKey(1) 
-            cv2.destroyAllWindows() 
-            #---------------------CORRECCIÓN-------------------
+            cv2.waitKey(1)  # Liberar recursos de OpenCV
+            cv2.destroyAllWindows() # Cerrar todas las ventanas de OpenCV
             
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -311,7 +312,7 @@ while run:
             y_velocity = 0
         player_y += y_velocity
 
-    # Progressive speed increases
+    # Incremento progresivo de la velocidad
     if distance < 50000:
         game_speed = 5 + (distance // 500) / 10
     else:
@@ -343,4 +344,3 @@ while run:
 # Liberar recursos
 cap.release()
 pygame.quit()
-
