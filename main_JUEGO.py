@@ -18,7 +18,6 @@ import pygame # Importa la biblioteca pygame para crear el juego.
 import cv2 # Importa la biblioteca OpenCV para trabajar con la cámara.
 import numpy as np # Importa la biblioteca NumPy para operaciones numéricas.
 import mediapipe as mp # Importa la biblioteca MediaPipe para detección de mano.
-#import sys # Importa el módulo sys para interactuar con el sistema operativo.
 
 #------------------------------------------------------------------------------
 #--1. Inicializo el sistema ---------------------------------------------------
@@ -69,12 +68,13 @@ except FileNotFoundError:
     high_score = 0 # Si el archivo no existe, establece el puntaje más alto en 0
     lifetime = 0 # Si el archivo no existe, establece el tiempo de vida en 0
 
-# Inicializar la cámara
-cap = cv2.VideoCapture(0)
 
 #------------------------------------------------------------------------------
 #--2. Detección de manos mediante MediaPipe -----------------------------------
 #------------------------------------------------------------------------------
+
+# Inicializar la cámara
+cap = cv2.VideoCapture(0)
 
 # Inicializar la detección de manos de MediaPipe
 mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
@@ -89,6 +89,7 @@ def detect_hand(frame):
 
     # Si se detectan manos, determinar si la mano está abierta o cerrada
     if results.multi_hand_landmarks:
+        
         #Extrae los puntos de referencia (landmarks) de la primera mano detectada. results.multi_hand_landmarks es una lista que contiene todos los puntos de referencia de las manos detectadas en el marco de la cámara.
         #results.multi_hand_landmarks[0] accede a los puntos de referencia de la primera mano detectada.
         landmarks = results.multi_hand_landmarks[0].landmark 
