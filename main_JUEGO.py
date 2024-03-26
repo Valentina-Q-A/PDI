@@ -197,8 +197,6 @@ def draw_pause():
     surface.blit(font.render('Restart', True, 'black'), (220, 230))
     quit_btn = pygame.draw.rect(surface, 'white', [520, 220, 280, 50], 0, 10)
     surface.blit(font.render('Quit', True, 'black'), (540, 230))
-    #pygame.draw.rect(surface, 'dark gray', [200, 300, 600, 50], 0, 10)
-    #surface.blit(font.render(f'Lifetime Distance Ran: {int(lifetime)}', True, 'black'), (220, 310))
     screen.blit(surface, (0, 0))
     return restart_btn, quit_btn
 
@@ -213,6 +211,14 @@ def modify_player_info():
     file.write(str(int(lifetime)))
     file.close()
     
+def mostrar_camara():
+    # Crea un objeto VideoCapture para capturar el video de la cámara
+    cap = cv2.VideoCapture(0)
+
+    # Verifica si la cámara está abierta
+    if not cap.isOpened():
+        print("Error: No se puede abrir la cámara.")
+        return
 
         
 
