@@ -311,25 +311,30 @@ def mostrar_camara():
         
 
 # Bucle principal del juego            
-run = True
+run = True # Variable de control del bucle principal del juego
 while run:
-    timer.tick(fps)
-    if new_laser:
-        laser = generate_laser()
-        new_laser = False
+    timer.tick(fps) # Limita la velocidad de fotogramas del juego a fotogramas por segundo
+    if new_laser: # Verifica si se debe generar un nuevo obstáculo láser
+        laser = generate_laser()  # Genera un nuevo obstáculo láser
+        new_laser = False # Marca que ya se generó un nuevo obstáculo láser
+
+    # Dibuja la pantalla del juego y obtiene la posición de los elementos en la pantalla
     lines, top_plat, bot_plat, laser, laser_line = draw_screen(lines, laser)
-    
+
+    # Si el juego está en pausa, dibuja la pantalla de pausa y obtiene los botones de reinicio y salida
     if pause:
         restart, quits = draw_pause()
     
-    
+   # Actualiza el contador del cohete si no está activo y el juego no está en pausa 
     if not rocket_active and not pause:
         rocket_counter += 1
-    if rocket_counter > 180:
+    if rocket_counter > 180: # Si el contador del cohete supera el límite, activa el cohete y establece sus parámetros iniciales
         rocket_counter = 0
         rocket_active = True
         rocket_delay = 0
         rocket_coords = [WIDTH, HEIGHT/2]
+        
+    # Si el cohete está activo, lo mueve y lo dibuja en la pantalla
     if rocket_active:
         if rocket_delay < 90:
             if not pause:
@@ -337,6 +342,8 @@ while run:
             rocket_coords, rocket = draw_rocket(rocket_coords, 0)
         else:
             rocket_coords, rocket = draw_rocket(rocket_coords, 1)
+
+        # Si el cohete se sale de la pantalla, lo desactiva
         if rocket_coords[0] < -50:
             rocket_active = False
     
@@ -362,8 +369,8 @@ while run:
         # Mostrar los puntos de referencia
         cv2.imshow('Hand Landmarks', frame)
 
-    player = draw_player()
-    colliding, restart_cmd = check_colliding()
+    player = draw_player() # Dibuja al jugador en la pantalla y obtiene su rectángulo delimitador
+    colliding, restart_cmd = check_colliding() # Verifica si hay colisiones entre el jugador y los obstáculos, y determina si se debe reiniciar el juego o no
 
     #Control de eventos
     for event in pygame.event.get():
