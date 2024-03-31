@@ -336,12 +336,12 @@ while run:
         
     # Si el cohete está activo, lo mueve y lo dibuja en la pantalla
     if rocket_active:
-        if rocket_delay < 90:
+        if rocket_delay < 90: # Si el retraso del cohete es menor que 90 (para el movimiento inicial ascendente)
             if not pause:
-                rocket_delay += 1
-            rocket_coords, rocket = draw_rocket(rocket_coords, 0)
+                rocket_delay += 1 # Incrementa el contador de retraso del cohete
+            rocket_coords, rocket = draw_rocket(rocket_coords, 0) # Dibuja el cohete en su estado ascendente y actualiza sus coordenadas
         else:
-            rocket_coords, rocket = draw_rocket(rocket_coords, 1)
+            rocket_coords, rocket = draw_rocket(rocket_coords, 1) # Dibuja el cohete en su estado descendente y actualiza sus coordenadas
 
         # Si el cohete se sale de la pantalla, lo desactiva
         if rocket_coords[0] < -50:
@@ -359,9 +359,9 @@ while run:
         
         # Ajustar el juego basado en el gesto de mano
         if hand_gesture == "open":
-            booster = True
+            booster = True # Activa el propulsor del jugador cuando se detecta un gesto de mano abierta
         else:
-            booster = False
+            booster = False # Desactiva el propulsor del jugador cuando se detecta un gesto de mano abierto
 
         # Dibujar los puntos de referencia de la mano en el marco
         draw_hand_landmarks(frame, mp_hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
@@ -382,6 +382,7 @@ while run:
             cv2.destroyAllWindows() # Cerrar todas las ventanas de OpenCV
             
         if event.type == pygame.KEYDOWN:
+            # Verifica si la tecla presionada es la tecla de escape
             if event.key == pygame.K_ESCAPE:
                 #pause = not pause  # Toggle pause
                 
@@ -396,25 +397,29 @@ while run:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 booster = False
-                
+        # Verifica si se ha presionado el botón del ratón y el juego está en pausa        
         if event.type == pygame.MOUSEBUTTONDOWN and pause:
             if restart.collidepoint(event.pos):
-                restart_cmd = True
+                restart_cmd = True # Establece el comando de reinicio como verdadero
+            # Verifica si se hizo clic en el botón de salir
             if quits.collidepoint(event.pos):
-                modify_player_info()
-                run = False
+                modify_player_info() # Modifica la información del jugador
+                run = False # Termina el bucle principal del juego
 
                 
-
+    # Actualiza la distancia recorrida si el juego no está en pausa
     if not pause:
         distance += game_speed
+        
+        # Calcula la velocidad vertical del jugador teniendo en cuenta el propulsor y la gravedad
         if booster:
             y_velocity -= gravity+1
         else:
             y_velocity += gravity+3
+        # Verifica si el jugador está colisionando y ajusta la velocidad vertical si es necesario
         if (colliding[0] and y_velocity > 0) or (colliding[1] and y_velocity < 0):
             y_velocity = 0
-        player_y += y_velocity
+        player_y += y_velocity # Actualiza la posición vertical del jugador basada en la velocidad vertical
 
     # Incremento progresivo de la velocidad
     if distance < 50000:
@@ -422,13 +427,16 @@ while run:
     else:
         game_speed = 5
 
+    # Verifica si ambos extremos del láser están fuera de la pantalla y establece la generación de un nuevo láser
     if laser[0][0] < 0 and laser[1][0] < 0:
         new_laser = True
 
+    # Actualiza el color de fondo y la posición de fondo cuando la distancia recorrida excede los 500
     if distance - new_bg > 500:
         new_bg = distance
         bg_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
+    # Si se ha activado el reinicio del juego, realiza las acciones necesarias y restablece las variables
     if restart_cmd:
         modify_player_info()
         distance = 0
@@ -440,10 +448,11 @@ while run:
         restart_cmd = 0
         new_laser = True
 
+    # Actualiza el puntaje más alto si la distancia recorrida supera el puntaje maximo
     if distance > high_score:
         high_score = int(distance)
 
-    pygame.display.flip()
+    pygame.display.flip() # Actualiza la pantalla del juego
 
 # Liberar recursos
 cap.release()
