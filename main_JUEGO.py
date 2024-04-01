@@ -24,7 +24,7 @@ import mediapipe as mp # Importa la biblioteca MediaPipe para detección de mano
 #------------------------------------------------------------------------------
 
 
-pygame.init() # Inicialización de Pygame
+pygame.init() # Inicialización de PygameG
 
 #----------Configuración de la pantalla del juego------------------------------
 WIDTH = 1000 # Anchura de la pantalla del juego
@@ -308,9 +308,10 @@ def mostrar_camara():
         print("Error: No se puede abrir la cámara.")
         return
 
-        
-
-# Bucle principal del juego            
+#------------------------------------------------------------------------------
+#--4.-------------Bucle principal del juego -----------------------------------
+#------------------------------------------------------------------------------
+            
 run = True # Variable de control del bucle principal del juego
 while run:
     timer.tick(fps) # Limita la velocidad de fotogramas del juego a fotogramas por segundo
@@ -457,3 +458,7 @@ while run:
 # Liberar recursos
 cap.release()
 pygame.quit()
+
+#------------------------------------------------------------------------------
+#---------------------------  FIN DEL PROGRAMA --------------------------------
+#------------------------------------------------------------------------------
