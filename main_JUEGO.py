@@ -2,9 +2,7 @@
 #---- PLANTILLA DE CÓDIGO -----------------------------------------------------
 #---- Primer trabajo de PDI ---------------------------------------------------
 #---- Por: Camilo Andrés Anacona Anacona  camilo.anacona@udea.edu.co ----------
-#----      CC 1061822363                                                -------
 #----      Maria Valentina Quiroga Alzate valentina.quiroga1@udea.edu.co ------
-#----      CC 1000214456                                               --------
 #----      Estudiantes de Ingeniería Electrónica  -----------------------------
 #---- Materia: Procesamiento Digital de Imágenes ------------------------------
 #---- Marzo de 2024 -----------------------------------------------------------
